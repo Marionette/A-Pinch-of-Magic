@@ -4,7 +4,7 @@
 # name of the character.
 
 define e = Character("Eileen")
-define a = Character("AYLA")
+define v = Character("Varshan")
 define long = Character("Eileen Long Name")
 
 
@@ -26,15 +26,15 @@ label start:
 
     # These display lines of dialogue.
 
-    a "You've created a new Ren'Py game."
+    v "You've created a new Ren'Py game."
 
-    a "Once you add a story, pictures, and music, you can release it to the world!"
+    v "Once you add a story, pictures, and music, you can release it to the world!"
 
     e "Once you add a story, pictures, and music, you can release it to the world!"
 
     long "Once you add a story, pictures, and music, you can release it to the world!"
     
-    a "Rgerg th rthrt rt htfh rhrhfh  t rgerg th rthrt rt htfh rhrhfh  t rgerg th rthrt rt jkljkljlhtfh rhrhfh  tkljkljkl rgerg th rtjklhrt rt htfh rhrhfh  t rgerg th rjkljñkl."
+    v "Rgerg th rthrt rt htfh rhrhfh  t rgerg th rthrt rt htfh rhrhfh  t rgerg th rthrt rt jkljkljlhtfh rhrhfh  tkljkljkl rgerg th rtjklhrt rt htfh rhrhfh  t rgerg th rjkljñkl."
     
     menu:
       "Option 1":

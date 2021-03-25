@@ -35,6 +35,10 @@ transform slide_appear(_timeStart=0.6, _xpos=0):
     parallel:
       easein 2.0 xpos _xpos
  
+transform slide(_timeStart=0.6, _xpos=0):
+    xpos 2000
+    time _timeStart
+    easein 2.0 xpos _xpos
  
 
 transform menu_item_move(_ystart=-1000, _timeStart=0.6):
@@ -166,6 +170,9 @@ screen say(who, what):
     if not renpy.variant("small"):
         add SideImage() xalign 0.0 yalign 1.0
 
+    # Use the quick menu.
+    use quick_menu
+
 
 ## Make the namebox available for styling through the Character object.
 init python:
@@ -198,10 +205,12 @@ style namebox:
     background Frame("gui/namebox.png", gui.namebox_borders, tile=gui.namebox_tile, xalign=gui.name_xalign)
     padding gui.namebox_borders.padding
 
+
 style say_label:
     properties gui.text_properties("name", accent=True)
     xalign gui.name_xalign
     yalign 0.5
+    outlines [ (5, "#fb81", 0, 0), (3, "#fb82", 0, 0),  (1, "#fb84", 0, 0) ]
 
 style say_dialogue:
     properties gui.text_properties("dialogue")
@@ -295,7 +304,7 @@ screen quick_menu():
     ## Ensure this appears on top of other screens.
     zorder 100
 
-    if quick_menu:               
+    if quick_menu and not renpy.get_screen('choice'):     
         imagebutton auto "gui/button/button_history_%s.png":
             xalign 1.0
             hovered [Show("qm_tooltip",ttcontent="Log",ttxpos=1880,ttypos=97)]
@@ -348,8 +357,8 @@ screen quick_menu():
 
 ## This code ensures that the quick_menu screen is displayed in-game, whenever
 ## the player has not explicitly hidden the interface.
-init python:
-    config.overlay_screens.append("quick_menu")
+#init python:
+#    config.overlay_screens.append("quick_menu")
 
 default quick_menu = True
 
@@ -400,17 +409,17 @@ screen navigation():
 
         if main_menu:
 
-            textbutton _("Start") action Start() xoffset 130 at slide_appear(0.1, 0)
+            textbutton _("Start") action Start() xoffset 130 at slide(0.1, 0)
 
         else:
 
             #textbutton _("History") action ShowMenu("history")
 
-            textbutton _("Save") action ShowMenu("save") xoffset 130  at slide_appear(0.2, 0)
+            textbutton _("Save") action ShowMenu("save") xoffset 130  at slide(0.2, 0)
 
-        textbutton _("Load") action ShowMenu("load") xoffset 30  at slide_appear(0.3, 0)
+        textbutton _("Load") action ShowMenu("load") xoffset 30  at slide(0.3, 0)
 
-        textbutton _("Options") action ShowMenu("preferences") xoffset -10 at slide_appear(0.4, 0)
+        textbutton _("Options") action ShowMenu("preferences") xoffset -10 at slide(0.4, 0)
 
         #if _in_replay:
 
@@ -431,10 +440,10 @@ screen navigation():
 
             ## The quit button is banned on iOS and unnecessary on Android and
             ## Web.
-            textbutton _("Quit") action Quit(confirm=not main_menu) xoffset 30  at slide_appear(0.5, 0)
+            textbutton _("Quit") action Quit(confirm=not main_menu) xoffset 30  at slide(0.5, 0)
             
 
-        textbutton _("Return") action Return() xoffset 150  at slide_appear(0.6, 0)
+        textbutton _("Return") action Return() xoffset 150  at slide(0.6, 0)
 
 
 style navigation_button is gui_button
@@ -454,6 +463,7 @@ style navigation_button:
 style navigation_button_text:
     properties gui.button_text_properties("navigation_button")
     xalign 0.5
+    yalign 0.5
 
 
 ## Main Menu screen ############################################################
@@ -487,12 +497,12 @@ screen main_menu():
         style_prefix "main_menu_nav"
         xpos 1480
         ypos 300
-        spacing 50
-        textbutton _("Start") action Start() at slide_appear(0.5, 0)
-        textbutton _("Load") action ShowMenu("load") xoffset -155 at  slide_appear(0.7, 0)
-        textbutton _("Options") action ShowMenu("preferences") xoffset -305 at slide_appear(0.9, 0)
-        textbutton _("Gallery") action ShowMenu("preferences") xoffset -300 at slide_appear(1.1, 0)
-        textbutton _("Quit") action Quit(confirm=not main_menu) xoffset -200 at slide_appear(1.3, 0)
+        spacing 60
+        textbutton _("Start") action Start() xoffset -35 at slide(0.5, 0)
+        textbutton _("Load") action ShowMenu("load") xoffset -205 at  slide(0.7, 0)
+        textbutton _("Options") action ShowMenu("preferences") xoffset -405 at slide(0.9, 0)
+        textbutton _("Gallery") action ShowMenu("preferences") xoffset -400 at slide(1.1, 0)
+        textbutton _("Quit") action Quit(confirm=not main_menu) xoffset -250 at slide(1.3, 0)
     
     if gui.show_name:
 
@@ -528,13 +538,17 @@ style main_menu_vbox:
     
 style main_menu_nav_button:
     properties gui.button_properties("navigation_button")
-    idle_background Frame("gui/button/button_idle.png", Borders(0, 10, 80, 0))
-    hover_background Frame("gui/button/button_hover.png", Borders(0, 10, 80, 0))
+    right_padding 90
+    top_padding 30
+    idle_background Frame("gui/button/button_idle.png", Borders(0, 0, 80, 0))
+    hover_background Frame("gui/button/button_hover.png", Borders(0, 0, 80, 0))
     ysize 89
     
 style main_menu_nav_button_text:
-    size 96
-    idle_color "#fff"
+    size gui.title_text_size
+    color "#fff"
+    font gui.name_text_font
+    hover_outlines [ (5, "#fb81", 0, 0), (3, "#fb82", 0, 0),  (1, "#fb84", 0, 0) ]
 
 style main_menu_text:
     properties gui.text_properties("main_menu", accent=True)
@@ -624,7 +638,8 @@ screen game_menu(title, scroll=None, yinitial=0.0):
 
     #    action Return()
 
-    label title
+    label title:
+      style "game_menu_title_label"
 
     if main_menu:
         key "game_menu" action ShowMenu("main_menu")
@@ -676,11 +691,22 @@ style game_menu_label_text:
     size gui.title_text_size
     color gui.accent_color
     yalign 0.5
-
+    
 style return_button:
     xpos gui.navigation_xpos
     yalign 1.0
     yoffset -45
+
+style game_menu_title_label is game_menu_label
+style game_menu_title_label_text is game_menu_label_text
+
+style game_menu_title_label:
+  xoffset -100
+  yoffset 50
+  
+style game_menu_title_label_text:
+    font gui.name_text_font
+    outlines [ (5, "#fb81", 0, 0), (3, "#fb82", 0, 0),  (1, "#fb84", 0, 0) ]
 
 
 ## About screen ################################################################
@@ -761,9 +787,6 @@ screen file_slots(title):
                 style "page_label"
 
                 key_events True
-                xalign 0.25
-                yoffset -50
-                xoffset 50
                 action page_name_value.Toggle()
 
                 input:
@@ -785,11 +808,12 @@ screen file_slots(title):
                     $ slot = i + 1
 
                     button:
+                        foreground "gui/button/slot_foreground.png"     
                         action FileAction(slot)
 
                         has vbox
 
-                        add FileScreenshot(slot) xalign 0.5
+                        add FileScreenshot(slot) #xalign 0.5
 
                         text FileTime(slot, format=_("{#file_time}%A, %B %d %Y, %H:%M"), empty=_("empty slot")):
                             style "slot_time_text"
@@ -802,6 +826,8 @@ screen file_slots(title):
             ## Buttons to access other pages.
             hbox:
                 style_prefix "page"
+                xfill True
+                xsize 1200
 
                 xalign 0.2
                 yalign 1.0
@@ -810,14 +836,14 @@ screen file_slots(title):
 
                 textbutton _("<") action FilePagePrevious()
 
-                if config.has_autosave:
-                    textbutton _("{#auto_page}A") action FilePage("auto")
+                #if config.has_autosave:
+                #    textbutton _("{#auto_page}A") action FilePage("auto")
 
-                if config.has_quicksave:
-                    textbutton _("{#quick_page}Q") action FilePage("quick")
+                #if config.has_quicksave:
+                #    textbutton _("{#quick_page}Q") action FilePage("quick")
 
                 ## range(1, 10) gives the numbers from 1 to 9.
-                for page in range(1, 10):
+                for page in range(1, 6):
                     textbutton "[page]" action FilePage(page)
 
                 textbutton _(">") action FilePageNext()
@@ -836,17 +862,27 @@ style slot_name_text is slot_button_text
 style page_label:
     xpadding 75
     ypadding 5
+    xalign 0.25
+    yoffset -150
+    xoffset 120
 
 style page_label_text:
     text_align 0.5
     layout "subtitle"
     hover_color gui.hover_color
+    size 85
+    font gui.name_text_font
+    hover_outlines [ (5, "#fb81", 0, 0), (3, "#fb82", 0, 0),  (1, "#fb84", 0, 0) ]
 
 style page_button:
     properties gui.button_properties("page_button")
+    xsize 50
+    ysize 50
 
 style page_button_text:
     properties gui.button_text_properties("page_button")
+    selected_color "#ec81a8"
+    hover_outlines [ (5, "#cfd1", 0, 0), (3, "#cfd2", 0, 0),  (1, "#cfd4", 0, 0) ]
 
 style slot_button:
     properties gui.button_properties("slot_button")
