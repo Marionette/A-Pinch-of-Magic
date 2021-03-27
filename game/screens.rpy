@@ -466,6 +466,27 @@ style navigation_button_text:
     yalign 0.5
 
 
+screen extra_navigation():
+    add "gui/overlay/menu_circle_small.png" at circle_rotate(1600, 250)
+
+    vbox:
+        style_prefix "navigation"
+
+        #xpos gui.navigation_xpos
+        xalign 1.0
+        yalign 0.5
+        yoffset 100
+
+        spacing gui.navigation_spacing
+
+        textbutton _("Promo Art") action ShowMenu("extras") xoffset 130  at slide(0.2, 0)
+        textbutton _("CG") action ShowMenu("extras") xoffset 30  at slide(0.3, 0)
+        textbutton _("Music") action ShowMenu("extras") xoffset -10 at slide(0.4, 0)
+        textbutton _("About") action ShowMenu("about") xoffset 30  at slide(0.5, 0)
+        textbutton _("Return") action Return() xoffset 150  at slide(0.6, 0)
+        textbutton _("Character") action ShowMenu("character_settings") xoffset 150  at slide(0.6, 0)
+
+
 ## Main Menu screen ############################################################
 ##
 ## Used to display the main menu when Ren'Py starts.
@@ -501,7 +522,7 @@ screen main_menu():
         textbutton _("Start") action Start() xoffset -35 at slide(0.5, 0)
         textbutton _("Load") action ShowMenu("load") xoffset -205 at  slide(0.7, 0)
         textbutton _("Options") action ShowMenu("preferences") xoffset -405 at slide(0.9, 0)
-        textbutton _("Gallery") action ShowMenu("preferences") xoffset -400 at slide(1.1, 0)
+        textbutton _("Gallery") action ShowMenu("extras") xoffset -400 at slide(1.1, 0)
         textbutton _("Quit") action Quit(confirm=not main_menu) xoffset -250 at slide(1.3, 0)
     
     if gui.show_name:
@@ -569,22 +590,17 @@ style main_menu_version:
 ## this screen is intended to be used with one or more children, which are
 ## transcluded (placed) inside it.
 
-screen game_menu(title, scroll=None, yinitial=0.0):
+screen game_menu(title, scroll=None, yinitial=0.0, extra_navigation=False, return_only=False):
 
     style_prefix "game_menu"
 
     if main_menu:
         add gui.main_menu_background
-    #else:
-    #    add gui.game_menu_background
         
     add "gui/overlay/game_menu.png" 
     add "gui/overlay/menu_fire_left.png" at fire_fade(0.4)
     add "gui/overlay/menu_fire_right.png" at fire_fade(0.7)
     add "gui/overlay/menu_fire_right2.png" at fire_fade(0.1)
-    #add "gui/overlay/menu_fire_left.png" at fire_fade(0.4)
-    #add "gui/overlay/menu_fire_right.png" at fire_fade(0.7)
-    #add "gui/overlay/menu_fire_right2.png" at fire_fade(0.1)
     
     frame:
         style "game_menu_outer_frame"
@@ -630,13 +646,17 @@ screen game_menu(title, scroll=None, yinitial=0.0):
             ## Reserve space for the navigation section.
             frame:
                 style "game_menu_navigation_frame"
-
-    use navigation
-
-    #textbutton _("Return"):
-    #    style "return_button"
-
-    #    action Return()
+    
+    #Change navigation depending on what type of screen is showing
+    if return_only:
+      textbutton _("Return"):
+          style "return_button"
+          action Return()
+    else:
+      if extra_navigation:
+          use extra_navigation
+      else:
+          use navigation
 
     label title:
       style "game_menu_title_label"
@@ -709,6 +729,94 @@ style game_menu_title_label_text:
     outlines [ (5, "#fb81", 0, 0), (3, "#fb82", 0, 0),  (1, "#fb84", 0, 0) ]
 
 
+screen game_menu_simple(title, scroll=None, yinitial=0.0, useBoxOverlay=True):
+
+    style_prefix "game_menu_simple"
+
+    if main_menu:
+        add gui.main_menu_background
+        
+    add "gui/overlay/game_menu_simple.png" 
+    if useBoxOverlay:
+        add "gui/overlay/menu_frame_box.png"
+    add "gui/overlay/menu_fire_left.png" at fire_fade(0.4)
+    add "gui/overlay/menu_fire_right.png" at fire_fade(0.7)
+    add "gui/overlay/menu_fire_right2.png" at fire_fade(0.1)
+    
+    frame:
+        style "game_menu_simple_outer_frame"
+
+        hbox:
+
+            frame:
+                style "game_menu_simple_content_frame"
+
+                if scroll == "viewport":
+
+                    viewport:
+                        yinitial yinitial
+                        scrollbars "vertical"
+                        mousewheel True
+                        draggable True
+                        pagekeys True
+
+                        side_yfill True
+
+                        vbox:
+                            transclude
+
+                elif scroll == "vpgrid":
+
+                    vpgrid:
+                        cols 1
+                        yinitial yinitial
+
+                        scrollbars "vertical"
+                        mousewheel True
+                        draggable True
+                        pagekeys True
+
+                        side_yfill True
+
+                        transclude
+
+                else:
+
+                    transclude
+
+            ## Reserve space for the navigation section.
+            #frame:
+            #    style "game_menu_navigation_frame"
+                
+    textbutton _("Return"):
+        style "return_button"
+        xalign 0.5
+        yoffset 0
+        action Return()
+
+    label title:
+      style "game_menu_title_label"
+
+    if main_menu:
+        key "game_menu" action ShowMenu("main_menu")
+        
+style game_menu_simple_outer_frame is game_menu_outer_frame
+style game_menu_simple_navigation_frame is game_menu_navigation_frame
+style game_menu_simple_side is game_menu_side
+style game_menu_simple_scrollbar is game_menu_scrollbar
+
+style game_menu_simple_content_frame is game_menu_content_frame
+style game_menu_simple_viewport is game_menu_viewport
+
+style game_menu_simple_content_frame:
+    left_margin 320
+    right_margin 30
+    top_margin 15
+    bottom_margin 120
+    
+style game_menu_simple_viewport:
+    xsize 1260
+
 ## About screen ################################################################
 ##
 ## This screen gives credit and copyright information about the game and Ren'Py.
@@ -723,7 +831,7 @@ screen about():
     ## This use statement includes the game_menu screen inside this one. The
     ## vbox child is then included inside the viewport inside the game_menu
     ## screen.
-    use game_menu(_("About"), scroll="viewport"):
+    use game_menu_simple(_("About"), scroll="viewport"):
 
         style_prefix "about"
 
@@ -744,8 +852,12 @@ style about_label_text is gui_label_text
 style about_text is gui_text
 
 style about_label_text:
-    size gui.label_text_size
+    size gui.name_text_size
+    font gui.name_text_font
 
+style about_text:
+    size gui.text_size
+    color gui.idle_color
 
 ## Load and Save screens #######################################################
 ##
@@ -1122,7 +1234,7 @@ screen history():
     ## Avoid predicting this screen, as it can be very large.
     predict False
 
-    use game_menu(_("History"), scroll=("vpgrid" if gui.history_height else "viewport"), yinitial=1.0):
+    use game_menu_simple(_("History"), scroll=("vpgrid" if gui.history_height else "viewport"), yinitial=1.0):
 
         style_prefix "history"
 
@@ -1191,6 +1303,8 @@ style history_text:
     min_width gui.history_text_width
     text_align gui.history_text_xalign
     layout ("subtitle" if gui.history_text_xalign else "tex")
+    size gui.text_size
+    color gui.idle_color
 
 style history_label:
     xfill True
@@ -1382,18 +1496,19 @@ screen confirm(message, yes_action, no_action):
     add "gui/overlay/confirm.png"
 
     frame:
-
         vbox:
             xalign .5
-            yalign .5
-            spacing 45
+            yalign .1
+            #spacing 125
 
             label _(message):
                 style "confirm_prompt"
                 xalign 0.5
+                yalign 0.5
 
-            hbox:
+        hbox:
                 xalign 0.5
+                yalign 0.5
                 spacing 150
 
                 textbutton _("Yes") action yes_action
@@ -1410,20 +1525,27 @@ style confirm_button is gui_medium_button
 style confirm_button_text is gui_medium_button_text
 
 style confirm_frame:
-    background Frame([ "gui/confirm_frame.png", "gui/frame.png"], gui.confirm_frame_borders, tile=gui.frame_tile)
+    background None #Frame([ "gui/confirm_frame.png", "gui/frame.png"], gui.confirm_frame_borders, tile=gui.frame_tile)
     padding gui.confirm_frame_borders.padding
     xalign .5
-    yalign .5
+    yalign .1
 
 style confirm_prompt_text:
     text_align 0.5
     layout "subtitle"
+    color gui.idle_color
+    size 50
 
 style confirm_button:
     properties gui.button_properties("confirm_button")
+    xsize 200
+    ysize 200
 
 style confirm_button_text:
     properties gui.button_text_properties("confirm_button")
+    font gui.name_text_font
+    size 100
+    hover_outlines [ (5, "#fb81", 0, 0), (3, "#fb82", 0, 0),  (1, "#fb84", 0, 0) ]
 
 
 ## Skip indicator screen #######################################################
@@ -1748,3 +1870,106 @@ style slider_pref_vbox:
 style slider_pref_slider:
     variant "small"
     xsize 900
+
+
+## Character Settings screen ################################################################
+##
+## This screen gives credit and copyright information about the game and Ren'Py.
+##
+## There's nothing special about this screen, and hence it also serves as an
+## example of how to make a custom screen.
+         
+init -1 python:      
+      
+    def SetPronoun(pronoun):
+        return [ SetField(persistent, "selected_pronoun", pronoun), If(not main_menu, RestartStatement()) ]
+
+    #variables set with this dont update when persistent changes unless re-called
+    def PronounPicker2(he, she, they):
+            if persistent.pronoun == "he":
+                return he
+            elif persistent.pronoun == "she":
+                return she
+            else:
+                return they
+                
+    class PronounPicker(store.object):
+        def __init__(self, he, she, they):
+            self.he = he
+            self.she = she
+            self.they = they
+            
+
+        #This should work and i've no idea why it doesnt. D;
+        def __unicode__(self):
+            if persistent.pronoun == "he":
+                return str(self.he)
+            elif persistent.pronoun == "she":
+                return str(self.she)
+            else:
+                return str(self.they)
+
+        def Get(self):
+            if persistent.pronoun == "he":
+                return str(self.he)
+            elif persistent.pronoun == "she":
+                return str(self.she)
+            else:
+                return str(self.they)
+
+screen character_settings():
+
+    tag menu
+
+    ## This use statement includes the game_menu screen inside this one. The
+    ## vbox child is then included inside the viewport inside the game_menu
+    ## screen.
+    use game_menu_simple(_("Character Settings"), useBoxOverlay=False):
+
+        style_prefix "about"
+        
+        hbox:
+          xoffset -150
+          imagebutton auto "gui/button/char_varsha_%s.png":
+            selected_idle "gui/button/char_varsha_hover.png"
+            action SetField(persistent, "selected_character", "varsha")
+          
+          vbox:
+            xoffset 10
+            style_prefix "radio"
+            label _("Pronouns") xoffset -10 xalign 0.5
+            null width (1 * gui.pref_spacing)
+            textbutton _("He/Him") action SetPronoun("he")
+            textbutton _("She/Her") action SetPronoun("she")
+            textbutton _("They/Them") action SetPronoun("they")
+            
+          imagebutton auto "gui/button/char_varshan_%s.png":
+            selected_idle "gui/button/char_varshan_hover.png"
+            action SetField(persistent, "selected_character", "varshan")
+                        
+    add "gui/overlay/menu_circle_small.png" at circle_rotate(-360, 700)
+    add "gui/overlay/menu_circle_small.png" at circle_rotate(1500, 700)
+
+
+style about_label is gui_label
+style about_label_text is gui_label_text
+style about_text is gui_text
+
+style about_label_text:
+    size gui.name_text_size
+    font gui.name_text_font
+
+style about_text:
+    size gui.text_size
+    color gui.idle_color
+    
+    
+screen extras():
+
+    tag menu
+
+    ## This use statement includes the game_menu screen inside this one. The
+    ## vbox child is then included inside the viewport inside the game_menu
+    ## screen.
+    use game_menu(_("Extras"), scroll="viewport", extra_navigation=True):
+      text " "

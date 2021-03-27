@@ -1,11 +1,24 @@
-﻿# The script of the game goes in this file.
+﻿
+# The script of the game goes in this file.
 
 # Declare characters used by this game. The color argument colorizes the
 # name of the character.
+init:
+    if persistent.selected_character is None:
+        $selected_character = "varshan"
+    if persistent.selected_pronoun is None:
+        $selected_pronoun = "they"
+                
+    define he = PronounPicker("he", "she", "they")
+    define his = PronounPicker("his", "hers", "theirs")
+    define him = PronounPicker("him", "her", "them")
 
-define e = Character("Eileen")
-define v = Character("Varshan")
-define long = Character("Eileen Long Name")
+    define e = Character("Eileen")
+    define long = Character("Eileen Long Name")
+
+    $character_name = "Varshan"
+
+    define v = DynamicCharacter("character_name")
 
 
 # The game starts here.
@@ -23,6 +36,8 @@ label start:
     # directory.
 
     show eileen happy
+    
+    jump character_selection_test
 
     # These display lines of dialogue.
 
@@ -58,4 +73,37 @@ label start:
     e "All done"
     # This ends the game.
 
+    return
+
+
+label character_selection_test:
+    
+    e "Well hello there."
+    
+    e "whats you're name?"
+    
+    "my name?"
+    
+    python:
+        character_name = renpy.input("What is your name?", length=32)
+        character_name = character_name.strip()
+
+        if not character_name:
+             character_name = "Varshan"
+         
+    v "My name is [character_name]."
+    
+    e "And how would you describe yourself?"
+    
+    call screen character_settings()
+    
+    v "My pronouns are [persistent.selected_pronoun] and I look like [persistent.selected_character]."
+    $hetest = he.Get()
+    $histest = his.Get()
+    $himtest = him.Get()
+    e "So thats a {b}[hetest]{/b} went to the store with {b}[histest]{/b} friend who liked {b}[himtest]{/b}"
+    e "So thats a {b}[he]{/b} went to the store with {b}[his]{/b} friend who liked {b}[him]{/b}"
+    
+    e "Thats great!"
+    
     return
