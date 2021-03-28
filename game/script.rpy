@@ -8,10 +8,7 @@ init:
         $selected_character = "varshan"
     if persistent.selected_pronoun is None:
         $selected_pronoun = "they"
-                
-    define he = PronounPicker("he", "she", "they")
-    define his = PronounPicker("his", "hers", "theirs")
-    define him = PronounPicker("him", "her", "them")
+        
 
     define e = Character("Eileen")
     define long = Character("Eileen Long Name")
@@ -34,6 +31,11 @@ label start:
     # This shows a character sprite. A placeholder is used, but you can
     # replace it by adding a file named "eileen happy.png" to the images
     # directory.
+    
+    scene cg kiana human
+    v "You've created a new Ren'Py game."
+    
+    scene cg mikhail good v
 
     show eileen happy
     
@@ -98,11 +100,12 @@ label character_selection_test:
     call screen character_settings()
     
     v "My pronouns are [persistent.selected_pronoun] and I look like [persistent.selected_character]."
-    $hetest = he.Get()
-    $histest = his.Get()
-    $himtest = him.Get()
-    e "So thats a {b}[hetest]{/b} went to the store with {b}[histest]{/b} friend who liked {b}[himtest]{/b}"
-    e "So thats a {b}[he]{/b} went to the store with {b}[his]{/b} friend who liked {b}[him]{/b}"
+    
+    e "And who are you after?"
+    
+    call screen route_select()
+    
+    v "I'm aiming for [selected_route]"
     
     e "Thats great!"
     

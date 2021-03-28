@@ -15,9 +15,25 @@ transform circle_rotate(_xpos=0, _ypos=0):
     parallel:
       rotate 0
       linear 30.0 rotate 360
+      repeat 
+
+transform circle_rotate_mr(_rotate=360):
+    parallel:
+      alpha 0.4
+      linear 5.0 alpha 0.8
+      linear 5.0 alpha 0.4
       repeat
- #at menu_item_move(-500, timeOffset+2.1)
- 
+    parallel:
+      rotate 0
+      linear 30.0 rotate _rotate
+      repeat
+      
+transform circle_fade_mr():
+    alpha 0.4
+    linear 5.0 alpha 0.8
+    linear 5.0 alpha 0.4
+    repeat
+      
 transform fire_fade(_timeStart=0.6):
     alpha 1.0
     time _timeStart
@@ -39,25 +55,6 @@ transform slide(_timeStart=0.6, _xpos=0):
     xpos 2000
     time _timeStart
     easein 2.0 xpos _xpos
- 
-
-transform menu_item_move(_ystart=-1000, _timeStart=0.6):
-    subpixel True
-    yoffset _ystart
-    time _timeStart
-    easein_bounce 2.2 yoffset 0
-    #ease .2 yoffset 0
-    
-transform open:
-    ypos -50
-    on hover:
-        linear 0.5 rotate 20
-        linear 0.5 rotate -20
-        repeat
-    on idle:
-        easein_bounce 0.5 rotate 0
-    on selected_idle:
-        linear 0.5 rotate 0
         
 ################################################################################
 ## Styles
@@ -231,15 +228,20 @@ style say_dialogue:
 ## https://www.renpy.org/doc/html/screen_special.html#input
 
 screen input(prompt):
-    style_prefix "input"
+    zorder 200
 
-    window:
+    style_prefix "confirm"
+
+    add "gui/overlay/confirm.png"
+
+    frame:
+        xalign .5
+        yalign .3
 
         vbox:
-            xalign gui.dialogue_text_xalign
-            xpos gui.dialogue_xpos
-            xsize gui.dialogue_width
-            ypos gui.dialogue_ypos
+            xalign .5
+            yalign .5
+            spacing 20
 
             text prompt style "input_prompt"
             input id "input"
@@ -253,6 +255,7 @@ style input_prompt:
 style input:
     xalign gui.dialogue_text_xalign
     xmaximum gui.dialogue_width
+
 
 
 ## Choice screen ###############################################################
@@ -373,7 +376,6 @@ style quick_button_text:
 
     
 style caption_med:
-    #font gui.adv_font_face
     size 34 * 0.6
     bold True
     color "#ffffff"
@@ -383,7 +385,6 @@ screen qm_tooltip(ttcontent,ttxpos,ttypos):
     text ttcontent:
         style "caption_med"
         xpos ttxpos ypos ttypos
-        #at gui_fade_inout(0.0,0.3)
 
 ################################################################################
 ## Main and Game Menu Screens
@@ -400,7 +401,6 @@ screen navigation():
     vbox:
         style_prefix "navigation"
 
-        #xpos gui.navigation_xpos
         xalign 1.0
         yalign 0.5
         yoffset 100
@@ -413,28 +413,11 @@ screen navigation():
 
         else:
 
-            #textbutton _("History") action ShowMenu("history")
-
             textbutton _("Save") action ShowMenu("save") xoffset 130  at slide(0.2, 0)
 
         textbutton _("Load") action ShowMenu("load") xoffset 30  at slide(0.3, 0)
 
         textbutton _("Options") action ShowMenu("preferences") xoffset -10 at slide(0.4, 0)
-
-        #if _in_replay:
-
-        #    textbutton _("End Replay") action EndReplay(confirm=True)
-
-        #elif not main_menu:
-
-        #    textbutton _("Main Menu") action MainMenu()
-
-        #textbutton _("About") action ShowMenu("about")
-
-        #if renpy.variant("pc") or (renpy.variant("web") and not renpy.variant("mobile")):
-
-            ## Help isn't necessary or relevant to mobile devices.
-        #    textbutton _("Help") action ShowMenu("help")
 
         if renpy.variant("pc"):
 
@@ -479,12 +462,14 @@ screen extra_navigation():
 
         spacing gui.navigation_spacing
 
-        textbutton _("Promo Art") action ShowMenu("extras") xoffset 130  at slide(0.2, 0)
-        textbutton _("CG") action ShowMenu("extras") xoffset 30  at slide(0.3, 0)
-        textbutton _("Music") action ShowMenu("extras") xoffset -10 at slide(0.4, 0)
+        textbutton _("Promo Art") action ShowMenu("promo_gallery") xoffset 130  at slide(0.2, 0)
+        textbutton _("CG") action ShowMenu("gallery") xoffset 30  at slide(0.3, 0)
+        textbutton _("Music") action ShowMenu("musicbox") xoffset -10 at slide(0.4, 0)
         textbutton _("About") action ShowMenu("about") xoffset 30  at slide(0.5, 0)
         textbutton _("Return") action Return() xoffset 150  at slide(0.6, 0)
-        textbutton _("Character") action ShowMenu("character_settings") xoffset 150  at slide(0.6, 0)
+        #Extra navigation for testing
+        #textbutton _("Character") action ShowMenu("character_settings") xoffset 150  at slide(0.6, 0)
+        #textbutton _("Route") action ShowMenu("route_select") xoffset 150  at slide(0.6, 0)
 
 
 ## Main Menu screen ############################################################
@@ -522,7 +507,7 @@ screen main_menu():
         textbutton _("Start") action Start() xoffset -35 at slide(0.5, 0)
         textbutton _("Load") action ShowMenu("load") xoffset -205 at  slide(0.7, 0)
         textbutton _("Options") action ShowMenu("preferences") xoffset -405 at slide(0.9, 0)
-        textbutton _("Gallery") action ShowMenu("extras") xoffset -400 at slide(1.1, 0)
+        textbutton _("Gallery") action ShowMenu("promo_gallery") xoffset -400 at slide(1.1, 0)
         textbutton _("Quit") action Quit(confirm=not main_menu) xoffset -250 at slide(1.3, 0)
     
     if gui.show_name:
@@ -682,7 +667,7 @@ style game_menu_outer_frame:
     bottom_padding 45
     top_padding 180
 
-    background None #"gui/overlay/game_menu.png"
+    background None 
 
 style game_menu_navigation_frame:
     xsize 420
@@ -783,10 +768,6 @@ screen game_menu_simple(title, scroll=None, yinitial=0.0, useBoxOverlay=True):
                 else:
 
                     transclude
-
-            ## Reserve space for the navigation section.
-            #frame:
-            #    style "game_menu_navigation_frame"
                 
     textbutton _("Return"):
         style "return_button"
@@ -795,7 +776,7 @@ screen game_menu_simple(title, scroll=None, yinitial=0.0, useBoxOverlay=True):
         action Return()
 
     label title:
-      style "game_menu_title_label"
+      style "game_menu_title_label" yoffset -10
 
     if main_menu:
         key "game_menu" action ShowMenu("main_menu")
@@ -1168,7 +1149,6 @@ style radio_vbox:
 
 style radio_button:
     properties gui.button_properties("radio_button")
-    #foreground "gui/button/radio_[prefix_]foreground.png"
     idle_background Frame("gui/button/button_option_idle.png", Borders(24, 24, 15, 24))
     hover_background Frame("gui/button/button_option_hover.png", Borders(24, 24, 15, 24))
     selected_idle_background Frame("gui/button/button_option_selected_idle.png", Borders(24, 24, 15, 24))
@@ -1186,7 +1166,6 @@ style check_vbox:
 
 style check_button:
     properties gui.button_properties("check_button")
-    #foreground "gui/button/check_[prefix_]foreground.png"
     idle_background Frame("gui/button/button_option_idle.png", Borders(24, 24, 15, 24))
     hover_background Frame("gui/button/button_option_hover.png", Borders(24, 24, 15, 24))
     selected_idle_background Frame("gui/button/button_option_selected_idle.png", Borders(24, 24, 15, 24))
@@ -1525,7 +1504,7 @@ style confirm_button is gui_medium_button
 style confirm_button_text is gui_medium_button_text
 
 style confirm_frame:
-    background None #Frame([ "gui/confirm_frame.png", "gui/frame.png"], gui.confirm_frame_borders, tile=gui.frame_tile)
+    background None 
     padding gui.confirm_frame_borders.padding
     xalign .5
     yalign .1
@@ -1918,7 +1897,7 @@ init -1 python:
                 return str(self.they)
 
 screen character_settings():
-
+    modal True
     tag menu
 
     ## This use statement includes the game_menu screen inside this one. The
@@ -1946,6 +1925,47 @@ screen character_settings():
           imagebutton auto "gui/button/char_varshan_%s.png":
             selected_idle "gui/button/char_varshan_hover.png"
             action SetField(persistent, "selected_character", "varshan")
+                        
+    add "gui/overlay/menu_circle_small.png" at circle_rotate(-360, 700)
+    add "gui/overlay/menu_circle_small.png" at circle_rotate(1500, 700)
+
+
+style about_label is gui_label
+style about_label_text is gui_label_text
+style about_text is gui_text
+
+style about_label_text:
+    size gui.name_text_size
+    font gui.name_text_font
+
+style about_text:
+    size gui.text_size
+    color gui.idle_color
+    
+init:
+  $selected_route = "common"
+    
+screen route_select():
+    modal True
+    tag menu
+
+    ## This use statement includes the game_menu screen inside this one. The
+    ## vbox child is then included inside the viewport inside the game_menu
+    ## screen.
+    use game_menu_simple(_("Route Select"), useBoxOverlay=False):
+
+        style_prefix "about"
+        
+        hbox:
+          yoffset -50
+          spacing 50
+          imagebutton auto "gui/button/char_kiana_%s.png":
+            selected_idle "gui/button/char_kiana_hover.png"
+            action SetVariable("selected_route", "kiana")
+            
+          imagebutton auto "gui/button/char_mikhail_%s.png":
+            selected_idle "gui/button/char_mikhail_hover.png"
+            action SetVariable("selected_route", "mikhail"),
                         
     add "gui/overlay/menu_circle_small.png" at circle_rotate(-360, 700)
     add "gui/overlay/menu_circle_small.png" at circle_rotate(1500, 700)
